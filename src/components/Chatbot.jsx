@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function ChatBot() {
   const [messages, setMessages] = useState([
-    { id: 1, sender: 'Shield AI', text: 'Hello! How can I assist you today?' },
+    { id: 1, sender: 'Shield AI', text: 'Hello! Please fill your details before starting KYC, Start with a Hi' },
   ]);
   const [showWhatIs, setShowWhatIs] = useState(true);
   const [showGetStarted, setShowGetStarted] = useState(true);
@@ -41,16 +41,19 @@ function ChatBot() {
       text: option,
     };
     setMessages([...messages, newMessage]);
-
+  
     switch (option) {
       case 'What is Identity Shield?':
         setShowWhatIs(false);
+        generateResponse(option);
         break;
       case 'Get started with Identity Shield':
         setShowGetStarted(false);
+        generateResponse(option);
         break;
       case 'Contact support':
         setShowContactSupport(false);
+        generateResponse(option);
         break;
       case 'Give Basic Info':
         setShowWhatIs(false);
@@ -71,7 +74,7 @@ function ChatBot() {
         break;
     }
   };
-
+  
   const generateBasicDetailsResponse = () => {
     const basicDetailKeys = Object.keys(basicDetails);
     if (basicDetailsIndex < basicDetailKeys.length) {
@@ -88,19 +91,39 @@ function ChatBot() {
   const handleBasicDetailsSubmit = (event) => {
     event.preventDefault();
     const detail = Object.keys(basicDetails)[basicDetailsIndex];
+    const value = event.target.elements.input.value;
+  
+    // Create a new message for the user's response
+    const newUserMessage = {
+      id: messages.length + 1,
+      sender: 'User',
+      text: value,
+    };
+    // Add the user's message to the messages state
+    setMessages([...messages, newUserMessage]);
+  
     const newBasicDetails = { ...basicDetails };
-    newBasicDetails[detail] = event.target.elements.input.value;
+    newBasicDetails[detail] = value;
     setBasicDetails(newBasicDetails);
+  
     const newIndex = basicDetailsIndex + 1;
-    if (newIndex < Object.keys(basicDetails).length) {
-      setBasicDetailsIndex(newIndex);
-      generateBasicDetailsResponse();
-    } else {
+    setBasicDetailsIndex(newIndex); // Increment the index to move to the next detail
+  
+    if (newIndex >= Object.keys(basicDetails).length) {
       setShowBasicDetails(false);
       setShowStartKYC(true);
       toast.success('Basic info collected');
+  
+      setTimeout(() => {
+        generateResponse('Start KYC'); // AI response for starting KYC
+      }, 1000);
+    } else {
+      generateBasicDetailsResponse(); // Ask for the next basic detail
     }
   };
+  
+  
+
 
   const handleFileChange = (event, stateSetter) => {
     const file = event.target.files[0];
@@ -122,19 +145,19 @@ function ChatBot() {
       const formData = new FormData();
       formData.append('id', idFile, idFile.name);
       formData.append('selfie', selfieFile, selfieFile.name);
-  
+
       const response = await fetch('http://localhost:5000/compare', {
         method: 'POST',
         body: formData,
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to upload images');
       }
-  
+
       const responseData = await response.json();
       const matchPercentage = responseData.match_percentage;
-  
+
       setMatchPercentage(matchPercentage);
 
       if (matchPercentage > 30) {
@@ -142,7 +165,7 @@ function ChatBot() {
       } else {
         toast.error("Face verification not successful");
       }
-  
+
     } catch (error) {
       console.error('Error:', error.stack || error.message);
       toast.error("Failed to upload images");
@@ -162,13 +185,13 @@ function ChatBot() {
         response = 'You can contact support via email at support@identityshield.com';
         break;
       case 'Start KYC':
-        response = 'You have started the KYC process. Please upload your Aadhar or PAN soft copy.';
+        response = 'You have started the K-Y-C process. Please upload your Aadhar or PAN soft copy.';
         break;
       default:
         response = "Sorry, I didn't understand that.";
         break;
     }
-  
+
     setTimeout(() => {
       const newMessage = {
         id: messages.length + 1,
@@ -240,13 +263,28 @@ function ChatBot() {
             </div>
           )}
           {showBasicDetails && (
-            <div className="basic-details-form">
-              <form onSubmit={handleBasicDetailsSubmit}>
-                <input type="text" id="input" />
-                <button type="submit">Send</button>
-              </form>
-            </div>
-          )}
+  <div className="basic-details-form">
+    <form onSubmit={handleBasicDetailsSubmit}>
+    <input 
+  type="text" 
+  id="input" 
+  value={basicDetails[Object.keys(basicDetails)[basicDetailsIndex]] || ''}
+  onChange={(event) => {
+    const detail = Object.keys(basicDetails)[basicDetailsIndex];
+    const newValue = event.target.value;
+    setBasicDetails((prevState) => ({
+      ...prevState,
+      [detail]: newValue,
+    }));
+  }}
+/>
+
+
+      <button type="submit">Send</button>
+    </form>
+  </div>
+)}
+
           {matchPercentage && <p>Match percentage: {matchPercentage}</p>}
           <ToastContainer />
         </div>
