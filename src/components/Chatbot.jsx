@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import '../App.css';
+import { useState, useRef, useEffect } from 'react';
+import '../styles/ChatBot.css';
 
 function ChatBot() {
   const [messages, setMessages] = useState([
@@ -13,6 +13,12 @@ function ChatBot() {
   const videoRef = useRef();
   const canvasRef = useRef();
   const [streaming, setStreaming] = useState(false);
+
+  const messagesEndRef = useRef(null);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  useEffect(scrollToBottom, [messages]);
 
   const handleOptionClick = (option) => {
     const newMessage = {
@@ -49,10 +55,10 @@ function ChatBot() {
     const imageFile = event.target.files[0];
     if (imageFile) {
       const formData = new FormData();
-      formData.append('image1', imageFile); // Assuming the first image is always uploaded for matching
+      formData.append('image1', imageFile);
 
       try {
-        const response = await fetch('/match-faces', { // Assuming the backend endpoint is /match-faces
+        const response = await fetch('/match-faces', {
           method: 'POST',
           body: formData,
         });
@@ -60,20 +66,33 @@ function ChatBot() {
           throw new Error('Failed to upload image');
         }
         const data = await response.json();
-        generateResponse(data.match_percentage); // Pass the match percentage received from the backend to generateResponse
+        generateResponse(data.match_percentage);
       } catch (error) {
         console.error('Error:', error.message);
       }
     }
   };
 
-  const generateResponse = (matchPercentage) => {
+  const generateResponse = (option) => {
     let response;
-    if (matchPercentage > 80) {
-      response = 'The faces in the uploaded images match with a high percentage.';
-    } else {
-      response = 'The faces in the uploaded images do not match.';
+    switch (option) {
+      case 'What is Identity Shield?':
+        response = 'Identity Shield is a comprehensive security solution...';
+        break;
+      case 'Get started with Identity Shield':
+        response = 'To get started with Identity Shield, please follow these steps...';
+        break;
+      case 'Contact support':
+        response = 'You can contact support via email at support@identityshield.com';
+        break;
+      case 'Start KYC':
+        response = 'You have started the KYC process.';
+        break;
+      default:
+        response = "Sorry, I didn't understand that.";
+        break;
     }
+
     setTimeout(() => {
       const newMessage = {
         id: messages.length + 1,
@@ -81,8 +100,6 @@ function ChatBot() {
         text: response,
       };
       setMessages((prevMessages) => [...prevMessages, newMessage]);
-
-      // Speak out the AI response
       speakText(response, 'en-IN');
     }, 1000);
   };
@@ -93,7 +110,7 @@ function ChatBot() {
     speech.volume = 1;
     speech.rate = 1;
     speech.pitch = 1;
-    speech.lang = lang; // Set the language for speech synthesis
+    speech.lang = lang;
     window.speechSynthesis.speak(speech);
   };
 
@@ -118,30 +135,41 @@ function ChatBot() {
 
     const imageData = canvas.toDataURL('image/jpeg');
 
-    // Create a link element
     const link = document.createElement('a');
     link.href = imageData;
-    link.download = 'captured_photo.jpeg'; // Specify the file name
+    link.download = 'captured_photo.jpeg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="chat-app-container">
+      <header className="chat-header">
         <h1>Identity Shield</h1>
       </header>
       <div className="chat-container">
+      <div className="messages-wrapper">
         <div className="messages">
           {messages.map((message) => (
-            <div key={message.id} className={`message ${message.sender.toLowerCase()}`}>
-              <span className="sender">{message.sender}</span>
+            <div
+              key={message.id}
+              className={`message ${message.sender.toLowerCase() === 'user' ? 'user' : 'ai'}`}
+            >
+              {message.sender.toLowerCase() === 'user' ? (
+                <span className="sender">You</span>
+              ) : (
+                <span className="sender">AI</span>
+              )}
               <p className="text">{message.text}</p>
             </div>
           ))}
+          <div ref={messagesEndRef} />
+        </div>
         </div>
         <div className="options-container">
+
+          <h3>Click the options below to continue</h3>
           {showWhatIs && (
             <button onClick={() => handleOptionClick('What is Identity Shield?')}>
               What is Identity Shield?
@@ -170,8 +198,7 @@ function ChatBot() {
         </div>
       </div>
       <input type="file" id="fileInput" style={{ display: 'none' }} onChange={handleImageUpload} />
-      {/* Video element for capturing live photo */}
-      <video ref={videoRef} id="video" style={{ display: 'none' }} />
+      <video ref={videoRef} id="video" />
       <canvas ref={canvasRef} id="canvas" style={{ display: 'none' }} />
     </div>
   );
