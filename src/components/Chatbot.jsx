@@ -1,5 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import '../styles/ChatBot.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function ChatBot() {
   const [messages, setMessages] = useState([
@@ -10,6 +13,7 @@ function ChatBot() {
   const [showContactSupport, setShowContactSupport] = useState(true);
   const [showStartKYC, setShowStartKYC] = useState(true);
   const [showUploadDocument, setShowUploadDocument] = useState(false);
+  const [showBasicDetails, setShowBasicDetails] = useState();
   const [selfieFile, setSelfieFile] = useState(null);
   const [idFile, setIdFile] = useState(null);
   const [matchPercentage, setMatchPercentage] = useState(null);
@@ -41,17 +45,31 @@ function ChatBot() {
       case 'Contact support':
         setShowContactSupport(false);
         break;
+      case 'Give Basic Details':
+        setShowStartKYC(false); // Hide Start KYC option temporarily
+        setShowUploadDocument(false); // Hide Upload Document option temporarily
+        setShowBasicDetails(true); // Show Basic Details form
+        break;
       case 'Start KYC':
         setShowStartKYC(false);
-        setShowUploadDocument(true);
+        setShowBasicDetails(false); // Hide Basic Details form
+        setShowUploadDocument(true); // Show Upload Document option
         break;
       default:
         break;
     }
 
-    if (option !== 'Start KYC') {
+    if (option !== 'Start KYC' && option !== 'Give Basic Details') {
       generateResponse(option);
     }
+  };
+
+  const handleBasicDetailsSubmit = (event) => {
+    event.preventDefault();
+    // Handle submission of basic details
+    // Update state with collected basic details
+    // For example: setShowStartKYC(true);
+    setShowStartKYC(true); // For demonstration, showing Start KYC after basic details submission
   };
 
   const handleFileChange = (event, stateSetter) => {
@@ -68,7 +86,6 @@ function ChatBot() {
   const handleIdUpload = (event) => {
     handleFileChange(event, setIdFile);
   };
-  
 
   const handleUploadImages = async () => {
     try {
@@ -92,17 +109,34 @@ function ChatBot() {
       const responseData = await response.json(); // Retrieve processed data from Flask
       console.log('Processed data:', responseData);
   
-      // Set the processed data to state or handle it as needed
+      // Extract match percentage from the response data
+      const matchPercentage = responseData.match_percentage;
+  
+      // Set the match percentage to state
+      setMatchPercentage(matchPercentage);
+
+      // Check if the match percentage is greater than 30
+      if (matchPercentage > 30) {
+        // Face verification successful
+        toast.success("Face verification successful", {
+        
+        });
+      } else {
+        // Face verification not successful
+        toast.error("Face verification not successful", {
+        
+        });
+      }
   
     } catch (error) {
       console.error('Error:', error.stack || error.message);
       // Handle error: log error message or display it to the user
+      toast.error("Failed to upload images", {
+        
+      });
     }
   };
-  
-  
 
-  
   const generateResponse = (option) => {
     let response;
     switch (option) {
@@ -193,7 +227,20 @@ function ChatBot() {
               <button onClick={handleUploadImages}>Upload Images</button>
             </div>
           )}
+          {showBasicDetails && (
+            <div className="basic-details-form">
+              <form onSubmit={handleBasicDetailsSubmit}>
+                {/* UI elements for collecting basic details */}
+                {/* For example: Name, DOB, Address, PAN/Aadhaar, Signature, Income Range, Type of Employment */}
+                {/* Add an onSubmit handler to submit the basic details */}
+                {/* For demonstration, a simple input for Name is added */}
+                <input type="text" placeholder="Enter your name" required />
+                <button type="submit">Submit</button>
+              </form>
+            </div>
+          )}
           {matchPercentage && <p>Match percentage: {matchPercentage}</p>}
+          <ToastContainer />
         </div>
       </div>
       <video ref={videoRef} id="video" style={{ display: streaming ? 'block' : 'none' }} />

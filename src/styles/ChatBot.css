@@ -21,20 +21,18 @@
   flex-direction: column;
   align-items: center;
   height: calc(100% - 50px); /* Adjusted for header */
-  
 }
-
 
 .messages-wrapper {
   width: 100%;
   max-width: 800px;
-  height: calc(100% - 50px); /* Adjusted for options */
+  height: calc(100% - 110px); /* Adjusted for options and input */
   padding: 0 20px; /* Adjusted for better padding */
+  overflow-y: auto; /* Added to enable scrolling if messages overflow */
 }
 
 .messages {
   height: 100%;
-  width:400px;  
 }
 
 .message {
@@ -50,35 +48,49 @@
   align-self: flex-start;
   background-color: #000000;
   color: white; /* Added for better readability */
-
 }
 
 .message.user {
   align-self: flex-end;
   background-color: #4a90e2;
   color: white;
-  margin-left: 100%;
-
 }
-.options-container button{
+
+.user-input {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 50%;
-  padding: 0 20px;
-  margin-left: 150%;
-  width:300px;
-  background-color:black;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.user-input input[type="text"] {
+  flex: 1;
+  margin-right: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.user-input button {
+  padding: 10px 20px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.user-input button:hover {
+  background-color: #3572b0;
 }
 
 .options-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 50%;
   padding: 0 20px;
-  margin-left: 150%;
-  width:300px;
+  width: 100%;
 }
 
 .options-container button {
@@ -93,14 +105,4 @@
 
 .options-container button:hover {
   background-color: #3572b0;
-}
-
-.input-container {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.input-container input[type="file"] {
-  display: none;
 }
