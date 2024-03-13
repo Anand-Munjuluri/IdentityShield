@@ -1,39 +1,58 @@
 from flask import Flask, request, jsonify
-from PIL import Image
-import face_recognition
+import cv2
+import numpy as np
 
 app = Flask(__name__)
 
-@app.route('/match-faces', methods=['POST'])
-def match_faces():
-    if 'image1' not in request.files or 'image2' not in request.files:
-        return jsonify({'error': 'Images not found in request'}), 400
+@app.route('/upload-document', methods=['POST'])
+def upload_document():
+    if 'document' not in request.files:
+        return jsonify({'error': 'No document file found'}), 400
+    
+    document_file = request.files['document']
+    
+    # Save the document file
+    document_file.save('document.jpg')
 
-    image1 = request.files['image1']
-    image2 = request.files['image2']
+    return jsonify({'message': 'Document uploaded successfully'}), 200
 
-    # Load images using PIL
-    pil_image1 = Image.open(image1)
-    pil_image2 = Image.open(image2)
+@app.route('/capture-live-image', methods=['POST'])
+def capture_live_image():
+    # Access the camera and capture a live image
+    # You can use OpenCV or any other library to capture the image
+    # Here's a basic example using OpenCV
+    cap = cv2.VideoCapture(0)
+    ret, frame = cap.read()
+    cap.release()
 
-    # Convert images to face_recognition format
-    face_image1 = face_recognition.load_image_file(pil_image1)
-    face_image2 = face_recognition.load_image_file(pil_image2)
+    if ret:
+        # Save the captured image
+        cv2.imwrite('live_image.jpg', frame)
+        return jsonify({'message': 'Live image captured successfully'}), 200
+    else:
+        return jsonify({'error': 'Failed to capture live image'}), 500
 
-    # Find face encodings
-    face_encoding1 = face_recognition.face_encodings(face_image1)
-    face_encoding2 = face_recognition.face_encodings(face_image2)
+@app.route('/compare-images', methods=['POST'])
+def compare_images():
+    # Load the uploaded document and live image
+    document_img = cv2.imread('document.jpg')
+    live_img = cv2.imread('live_image.jpg')
 
-    if not face_encoding1 or not face_encoding2:
-        return jsonify({'error': 'No faces found in one or both images'}), 400
+    # Convert images to grayscale for comparison
+    document_gray = cv2.cvtColor(document_img, cv2.COLOR_BGR2GRAY)
+    live_gray = cv2.cvtColor(live_img, cv2.COLOR_BGR2GRAY)
 
-    # Compare face encodings
-    match_results = face_recognition.compare_faces([face_encoding1[0]], face_encoding2[0])
+    # Perform image comparison using OpenCV's template matching or any other method
+    # Here's a basic example using template matching
+    res = cv2.matchTemplate(live_gray, document_gray, cv2.TM_CCOEFF_NORMED)
+    similarity = np.max(res)
 
-    # Determine match percentage
-    match_percentage = 0 if not match_results else 100 if match_results[0] else 0
-
-    return jsonify({'match_percentage': match_percentage})
+    # Set a threshold for similarity
+    threshold = 0.8
+    if similarity > threshold:
+        return jsonify({'match_percentage': similarity}), 200
+    else:
+        return jsonify({'match_percentage': similarity}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

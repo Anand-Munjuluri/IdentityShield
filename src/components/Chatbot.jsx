@@ -9,7 +9,7 @@ function ChatBot() {
   const [showGetStarted, setShowGetStarted] = useState(true);
   const [showContactSupport, setShowContactSupport] = useState(true);
   const [showStartKYC, setShowStartKYC] = useState(true);
-  const [showIdentityProofOptions, setShowIdentityProofOptions] = useState(false);
+  const [showUploadDocument, setShowUploadDocument] = useState(false);
   const videoRef = useRef();
   const canvasRef = useRef();
   const [streaming, setStreaming] = useState(false);
@@ -40,7 +40,7 @@ function ChatBot() {
         break;
       case 'Start KYC':
         setShowStartKYC(false);
-        setShowIdentityProofOptions(true);
+        setShowUploadDocument(true);
         break;
       default:
         break;
@@ -51,27 +51,35 @@ function ChatBot() {
     }
   };
 
-  const handleImageUpload = async (event) => {
-    const imageFile = event.target.files[0];
-    if (imageFile) {
+  const handleDocumentUpload = async (event) => {
+    const documentFile = event.target.files[0];
+    if (documentFile) {
       const formData = new FormData();
-      formData.append('image1', imageFile);
-
+      formData.append('document', documentFile);
+  
       try {
-        const response = await fetch('/match-faces', {
+        // Upload the document to the server for KYC verification
+        // Assuming '/upload-document' is the endpoint for document upload
+        const response = await fetch('/upload-document', {
           method: 'POST',
           body: formData,
         });
+  
         if (!response.ok) {
-          throw new Error('Failed to upload image');
+          throw new Error('Failed to upload document');
         }
-        const data = await response.json();
-        generateResponse(data.match_percentage);
+  
+        // Document uploaded successfully, proceed to capture live image
+        setLiveImageCaptured(true);
+        setShowUploadDocument(false);
+        generateResponse('Document uploaded successfully!'); // Setting the correct response option here
       } catch (error) {
         console.error('Error:', error.message);
+        generateResponse('Failed to upload document. Please try again.');
       }
     }
   };
+  
 
   const generateResponse = (option) => {
     let response;
@@ -86,13 +94,16 @@ function ChatBot() {
         response = 'You can contact support via email at support@identityshield.com';
         break;
       case 'Start KYC':
-        response = 'You have started the KYC process.';
+        response = 'You have started the KYC process. Please upload your Aadhar or PAN soft copy.';
+        break;
+      case 'Document uploaded successfully!':
+        response = 'Document uploaded successfully! Please wait while we capture your live image.';
         break;
       default:
         response = "Sorry, I didn't understand that.";
         break;
     }
-
+  
     setTimeout(() => {
       const newMessage = {
         id: messages.length + 1,
@@ -103,6 +114,7 @@ function ChatBot() {
       speakText(response, 'en-IN');
     }, 1000);
   };
+  
 
   const speakText = (text, lang) => {
     const speech = new SpeechSynthesisUtterance();
@@ -124,51 +136,31 @@ function ChatBot() {
       .catch((err) => console.error('Error accessing camera:', err));
   };
 
-  const capturePhoto = () => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    const video = videoRef.current;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const imageData = canvas.toDataURL('image/jpeg');
-
-    const link = document.createElement('a');
-    link.href = imageData;
-    link.download = 'captured_photo.jpeg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="chat-app-container">
       <header className="chat-header">
         <h1>Identity Shield</h1>
       </header>
       <div className="chat-container">
-      <div className="messages-wrapper">
-        <div className="messages">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`message ${message.sender.toLowerCase() === 'user' ? 'user' : 'ai'}`}
-            >
-              {message.sender.toLowerCase() === 'user' ? (
-                <span className="sender">You</span>
-              ) : (
-                <span className="sender">AI</span>
-              )}
-              <p className="text">{message.text}</p>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+        <div className="messages-wrapper">
+          <div className="messages">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`message ${message.sender.toLowerCase() === 'user' ? 'user' : 'ai'}`}
+              >
+                {message.sender.toLowerCase() === 'user' ? (
+                  <span className="sender">You</span>
+                ) : (
+                  <span className="sender">AI</span>
+                )}
+                <p className="text">{message.text}</p>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
         <div className="options-container">
-
           <h3>Click the options below to continue</h3>
           {showWhatIs && (
             <button onClick={() => handleOptionClick('What is Identity Shield?')}>
@@ -186,20 +178,14 @@ function ChatBot() {
           {showStartKYC && (
             <button onClick={() => handleOptionClick('Start KYC')}>Start KYC</button>
           )}
-          {showIdentityProofOptions && (
+          {showUploadDocument && (
             <div>
-              <button onClick={() => document.getElementById('fileInput').click()}>
-                Upload Identity Proof
-              </button>
-              {!streaming && <button onClick={startCamera}>Capture Identity Proof</button>}
-              {streaming && <button onClick={capturePhoto}>Capture Photo</button>}
+              <input type="file" id="documentInput" onChange={handleDocumentUpload} />
             </div>
           )}
         </div>
       </div>
-      <input type="file" id="fileInput" style={{ display: 'none' }} onChange={handleImageUpload} />
-      <video ref={videoRef} id="video" />
-      <canvas ref={canvasRef} id="canvas" style={{ display: 'none' }} />
+      <video ref={videoRef} id="video" style={{ display: streaming ? 'block' : 'none' }} />
     </div>
   );
 }
