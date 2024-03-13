@@ -10,6 +10,9 @@ function ChatBot() {
   const [showContactSupport, setShowContactSupport] = useState(true);
   const [showStartKYC, setShowStartKYC] = useState(true);
   const [showUploadDocument, setShowUploadDocument] = useState(false);
+  const [selfieFile, setSelfieFile] = useState(null);
+  const [idFile, setIdFile] = useState(null);
+  const [matchPercentage, setMatchPercentage] = useState(null);
   const videoRef = useRef();
   const canvasRef = useRef();
   const [streaming, setStreaming] = useState(false);
@@ -51,36 +54,55 @@ function ChatBot() {
     }
   };
 
-  const handleDocumentUpload = async (event) => {
-    const documentFile = event.target.files[0];
-    if (documentFile) {
+  const handleFileChange = (event, stateSetter) => {
+    const file = event.target.files[0]; // Access the first selected file
+    if (file) {
+      stateSetter(file); // Update state only if a file is selected
+    }
+  };
+  
+  const handleSelfieUpload = (event) => {
+    handleFileChange(event, setSelfieFile);
+  };
+  
+  const handleIdUpload = (event) => {
+    handleFileChange(event, setIdFile);
+  };
+  
+
+  const handleUploadImages = async () => {
+    if (selfieFile && idFile) {
       const formData = new FormData();
-      formData.append('document', documentFile);
+      formData.append('selfie', selfieFile);
+      formData.append('id', idFile);
   
       try {
-        // Upload the document to the server for KYC verification
-        // Assuming '/upload-document' is the endpoint for document upload
-        const response = await fetch('/upload-document', {
+        const response = await fetch('/compare', {
           method: 'POST',
           body: formData,
         });
   
         if (!response.ok) {
-          throw new Error('Failed to upload document');
+          throw new Error('Failed to upload images');
         }
   
-        // Document uploaded successfully, proceed to capture live image
-        setLiveImageCaptured(true);
-        setShowUploadDocument(false);
-        generateResponse('Document uploaded successfully!'); // Setting the correct response option here
+        const data = await response.json();
+        setMatchPercentage(data.match_percentage);
+        console.log('Matching percentage:', data.match_percentage);
+  
+        // Extract and log additional results from JSON (assuming 'message' field exists)
+        const message = data.message;
+        if (message) {
+          console.log('Additional message from backend:', message);
+        }
       } catch (error) {
         console.error('Error:', error.message);
-        generateResponse('Failed to upload document. Please try again.');
       }
+    } else {
+      console.error('Please select both selfie and ID images.');
     }
   };
   
-
   const generateResponse = (option) => {
     let response;
     switch (option) {
@@ -95,9 +117,6 @@ function ChatBot() {
         break;
       case 'Start KYC':
         response = 'You have started the KYC process. Please upload your Aadhar or PAN soft copy.';
-        break;
-      case 'Document uploaded successfully!':
-        response = 'Document uploaded successfully! Please wait while we capture your live image.';
         break;
       default:
         response = "Sorry, I didn't understand that.";
@@ -114,7 +133,6 @@ function ChatBot() {
       speakText(response, 'en-IN');
     }, 1000);
   };
-  
 
   const speakText = (text, lang) => {
     const speech = new SpeechSynthesisUtterance();
@@ -124,16 +142,6 @@ function ChatBot() {
     speech.pitch = 1;
     speech.lang = lang;
     window.speechSynthesis.speak(speech);
-  };
-
-  const startCamera = () => {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then((stream) => {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-        setStreaming(true);
-      })
-      .catch((err) => console.error('Error accessing camera:', err));
   };
 
   return (
@@ -180,9 +188,12 @@ function ChatBot() {
           )}
           {showUploadDocument && (
             <div>
-              <input type="file" id="documentInput" onChange={handleDocumentUpload} />
+              <input type="file" id="selfieInput" onChange={handleSelfieUpload} />
+              <input type="file" id="idInput" onChange={handleIdUpload} />
+              <button onClick={handleUploadImages}>Upload Images</button>
             </div>
           )}
+          {matchPercentage && <p>Match percentage: {matchPercentage}</p>}
         </div>
       </div>
       <video ref={videoRef} id="video" style={{ display: streaming ? 'block' : 'none' }} />

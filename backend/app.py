@@ -1,58 +1,87 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 import cv2
-import numpy as np
+from skimage.metrics import structural_similarity as ssim
+import os
 
 app = Flask(__name__)
 
-@app.route('/upload-document', methods=['POST'])
-def upload_document():
-    if 'document' not in request.files:
-        return jsonify({'error': 'No document file found'}), 400
-    
-    document_file = request.files['document']
-    
-    # Save the document file
-    document_file.save('document.jpg')
+# Define the upload folder
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-    return jsonify({'message': 'Document uploaded successfully'}), 200
+# Configure upload folder
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/capture-live-image', methods=['POST'])
-def capture_live_image():
-    # Access the camera and capture a live image
-    # You can use OpenCV or any other library to capture the image
-    # Here's a basic example using OpenCV
-    cap = cv2.VideoCapture(0)
-    ret, frame = cap.read()
-    cap.release()
+# Define allowed extensions for upload
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-    if ret:
-        # Save the captured image
-        cv2.imwrite('live_image.jpg', frame)
-        return jsonify({'message': 'Live image captured successfully'}), 200
+# Function to check if the file extension is allowed
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Route for the homepage
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Route to handle image uploads and compare faces
+@app.route('/compare', methods=['POST'])
+def compare_faces():
+    # Check if files were uploaded in the request
+    if 'selfie' not in request.files or 'id' not in request.files:
+        return jsonify({"error": "Please upload both selfie and ID images."}), 400
+
+    selfie = request.files['selfie']
+    id_image = request.files['id']
+
+    # Check if the files have valid extensions
+    if selfie.filename == '' or id_image.filename == '':
+        return jsonify({"error": "Please upload both selfie and ID images."}), 400
+    if not allowed_file(selfie.filename) or not allowed_file(id_image.filename):
+        return jsonify({"error": "Invalid file format. Please upload images in PNG, JPG, or JPEG format."}), 400
+
+    # Save the uploaded images
+    selfie_path = os.path.join(app.config['UPLOAD_FOLDER'], 'selfie.png')
+    id_path = os.path.join(app.config['UPLOAD_FOLDER'], 'id.png')
+    selfie.save(selfie_path)
+    id_image.save(id_path)
+
+    # Load images
+    image1 = cv2.imread(selfie_path)
+    image2 = cv2.imread(id_path)
+
+    # Convert images to grayscale
+    gray_image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    gray_image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+
+    # Detect faces in both images
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    faces1 = face_cascade.detectMultiScale(gray_image1, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    faces2 = face_cascade.detectMultiScale(gray_image2, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+    # Extract the first detected face from each image (assuming only one face is detected)
+    if len(faces1) > 0 and len(faces2) > 0:
+        (x1, y1, w1, h1) = faces1[0]
+        (x2, y2, w2, h2) = faces2[0]
+
+        # Crop the detected faces
+        face1 = gray_image1[y1:y1+h1, x1:x1+w1]
+        face2 = gray_image2[y2:y2+h2, x2:x2+w2]
+
+        # Resize the faces to have the same dimensions for comparison
+        face1_resized = cv2.resize(face1, (face2.shape[1], face2.shape[0]))
+
+        # Calculate SSIM (Structural Similarity Index)
+        ssim_value = ssim(face1_resized, face2)
+
+        # Convert SSIM value to percentage
+        match_percentage = ssim_value * 100
+        match_percentage = round(match_percentage, 2)  # Round to 2 decimal places
+
+        return jsonify({"match_percentage": match_percentage})
     else:
-        return jsonify({'error': 'Failed to capture live image'}), 500
-
-@app.route('/compare-images', methods=['POST'])
-def compare_images():
-    # Load the uploaded document and live image
-    document_img = cv2.imread('document.jpg')
-    live_img = cv2.imread('live_image.jpg')
-
-    # Convert images to grayscale for comparison
-    document_gray = cv2.cvtColor(document_img, cv2.COLOR_BGR2GRAY)
-    live_gray = cv2.cvtColor(live_img, cv2.COLOR_BGR2GRAY)
-
-    # Perform image comparison using OpenCV's template matching or any other method
-    # Here's a basic example using template matching
-    res = cv2.matchTemplate(live_gray, document_gray, cv2.TM_CCOEFF_NORMED)
-    similarity = np.max(res)
-
-    # Set a threshold for similarity
-    threshold = 0.8
-    if similarity > threshold:
-        return jsonify({'match_percentage': similarity}), 200
-    else:
-        return jsonify({'match_percentage': similarity}), 404
+        return jsonify({"error": "No faces detected in one or both images."}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
