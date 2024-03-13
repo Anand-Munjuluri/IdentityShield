@@ -3,7 +3,6 @@ import '../styles/ChatBot.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 function ChatBot() {
   const [messages, setMessages] = useState([
     { id: 1, sender: 'Shield AI', text: 'Hello! How can I assist you today?' },
@@ -11,16 +10,24 @@ function ChatBot() {
   const [showWhatIs, setShowWhatIs] = useState(true);
   const [showGetStarted, setShowGetStarted] = useState(true);
   const [showContactSupport, setShowContactSupport] = useState(true);
-  const [showStartKYC, setShowStartKYC] = useState(true);
+  const [showStartKYC, setShowStartKYC] = useState(false);
   const [showUploadDocument, setShowUploadDocument] = useState(false);
-  const [showBasicDetails, setShowBasicDetails] = useState();
+  const [showBasicDetails, setShowBasicDetails] = useState(true);
+  const [basicDetailsIndex, setBasicDetailsIndex] = useState(0);
+  const [basicDetails, setBasicDetails] = useState({
+    name: '',
+    dob: '',
+    address: '',
+    panAadhaar: '',
+    signature: '',
+    incomeRange: '',
+    employmentType: '',
+  });
   const [selfieFile, setSelfieFile] = useState(null);
   const [idFile, setIdFile] = useState(null);
   const [matchPercentage, setMatchPercentage] = useState(null);
-  const videoRef = useRef();
-  const canvasRef = useRef();
-  const [streaming, setStreaming] = useState(false);
 
+  const videoRef = useRef();
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,44 +52,67 @@ function ChatBot() {
       case 'Contact support':
         setShowContactSupport(false);
         break;
-      case 'Give Basic Details':
-        setShowStartKYC(false); // Hide Start KYC option temporarily
-        setShowUploadDocument(false); // Hide Upload Document option temporarily
-        setShowBasicDetails(true); // Show Basic Details form
+      case 'Give Basic Info':
+        setShowWhatIs(false);
+        setShowGetStarted(false);
+        setShowContactSupport(false);
+        setShowStartKYC(false);
+        setShowUploadDocument(false);
+        setShowBasicDetails(true);
+        setBasicDetailsIndex(0);
+        generateBasicDetailsResponse();
         break;
       case 'Start KYC':
         setShowStartKYC(false);
-        setShowBasicDetails(false); // Hide Basic Details form
-        setShowUploadDocument(true); // Show Upload Document option
+        setShowBasicDetails(false);
+        setShowUploadDocument(true);
         break;
       default:
         break;
     }
+  };
 
-    if (option !== 'Start KYC' && option !== 'Give Basic Details') {
-      generateResponse(option);
+  const generateBasicDetailsResponse = () => {
+    const basicDetailKeys = Object.keys(basicDetails);
+    if (basicDetailsIndex < basicDetailKeys.length) {
+      const detail = basicDetailKeys[basicDetailsIndex];
+      const newMessage = {
+        id: messages.length + 1,
+        sender: 'Shield AI',
+        text: `Please provide your ${detail}:`,
+      };
+      setMessages([...messages, newMessage]);
     }
   };
 
   const handleBasicDetailsSubmit = (event) => {
     event.preventDefault();
-    // Handle submission of basic details
-    // Update state with collected basic details
-    // For example: setShowStartKYC(true);
-    setShowStartKYC(true); // For demonstration, showing Start KYC after basic details submission
+    const detail = Object.keys(basicDetails)[basicDetailsIndex];
+    const newBasicDetails = { ...basicDetails };
+    newBasicDetails[detail] = event.target.elements.input.value;
+    setBasicDetails(newBasicDetails);
+    const newIndex = basicDetailsIndex + 1;
+    if (newIndex < Object.keys(basicDetails).length) {
+      setBasicDetailsIndex(newIndex);
+      generateBasicDetailsResponse();
+    } else {
+      setShowBasicDetails(false);
+      setShowStartKYC(true);
+      toast.success('Basic info collected');
+    }
   };
 
   const handleFileChange = (event, stateSetter) => {
-    const file = event.target.files[0]; // Access the first selected file
+    const file = event.target.files[0];
     if (file) {
-      stateSetter(file); // Update state only if a file is selected
+      stateSetter(file);
     }
   };
-  
+
   const handleSelfieUpload = (event) => {
     handleFileChange(event, setSelfieFile);
   };
-  
+
   const handleIdUpload = (event) => {
     handleFileChange(event, setIdFile);
   };
@@ -90,11 +120,7 @@ function ChatBot() {
   const handleUploadImages = async () => {
     try {
       const formData = new FormData();
-  
-      // Append ID image file
       formData.append('id', idFile, idFile.name);
-      
-      // Append selfie image file
       formData.append('selfie', selfieFile, selfieFile.name);
   
       const response = await fetch('http://localhost:5000/compare', {
@@ -106,34 +132,20 @@ function ChatBot() {
         throw new Error('Failed to upload images');
       }
   
-      const responseData = await response.json(); // Retrieve processed data from Flask
-      console.log('Processed data:', responseData);
-  
-      // Extract match percentage from the response data
+      const responseData = await response.json();
       const matchPercentage = responseData.match_percentage;
   
-      // Set the match percentage to state
       setMatchPercentage(matchPercentage);
 
-      // Check if the match percentage is greater than 30
       if (matchPercentage > 30) {
-        // Face verification successful
-        toast.success("Face verification successful", {
-        
-        });
+        toast.success("Face verification successful");
       } else {
-        // Face verification not successful
-        toast.error("Face verification not successful", {
-        
-        });
+        toast.error("Face verification not successful");
       }
   
     } catch (error) {
       console.error('Error:', error.stack || error.message);
-      // Handle error: log error message or display it to the user
-      toast.error("Failed to upload images", {
-        
-      });
+      toast.error("Failed to upload images");
     }
   };
 
@@ -230,12 +242,8 @@ function ChatBot() {
           {showBasicDetails && (
             <div className="basic-details-form">
               <form onSubmit={handleBasicDetailsSubmit}>
-                {/* UI elements for collecting basic details */}
-                {/* For example: Name, DOB, Address, PAN/Aadhaar, Signature, Income Range, Type of Employment */}
-                {/* Add an onSubmit handler to submit the basic details */}
-                {/* For demonstration, a simple input for Name is added */}
-                <input type="text" placeholder="Enter your name" required />
-                <button type="submit">Submit</button>
+                <input type="text" id="input" />
+                <button type="submit">Send</button>
               </form>
             </div>
           )}
@@ -243,7 +251,7 @@ function ChatBot() {
           <ToastContainer />
         </div>
       </div>
-      <video ref={videoRef} id="video" style={{ display: streaming ? 'block' : 'none' }} />
+      <video ref={videoRef} id="video" />
     </div>
   );
 }
