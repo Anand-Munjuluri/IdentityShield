@@ -71,37 +71,37 @@ function ChatBot() {
   
 
   const handleUploadImages = async () => {
-    if (selfieFile && idFile) {
+    try {
       const formData = new FormData();
-      formData.append('selfie', selfieFile);
-      formData.append('id', idFile);
   
-      try {
-        const response = await fetch('/compare', {
-          method: 'POST',
-          body: formData,
-        });
+      // Append ID image file
+      formData.append('id', idFile, idFile.name);
+      
+      // Append selfie image file
+      formData.append('selfie', selfieFile, selfieFile.name);
   
-        if (!response.ok) {
-          throw new Error('Failed to upload images');
-        }
+      const response = await fetch('http://localhost:5000/compare', {
+        method: 'POST',
+        body: formData,
+      });
   
-        const data = await response.json();
-        setMatchPercentage(data.match_percentage);
-        console.log('Matching percentage:', data.match_percentage);
-  
-        // Extract and log additional results from JSON (assuming 'message' field exists)
-        const message = data.message;
-        if (message) {
-          console.log('Additional message from backend:', message);
-        }
-      } catch (error) {
-        console.error('Error:', error.message);
+      if (!response.ok) {
+        throw new Error('Failed to upload images');
       }
-    } else {
-      console.error('Please select both selfie and ID images.');
+  
+      const responseData = await response.json(); // Retrieve processed data from Flask
+      console.log('Processed data:', responseData);
+  
+      // Set the processed data to state or handle it as needed
+  
+    } catch (error) {
+      console.error('Error:', error.stack || error.message);
+      // Handle error: log error message or display it to the user
     }
   };
+  
+  
+
   
   const generateResponse = (option) => {
     let response;

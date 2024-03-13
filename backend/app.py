@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import cv2
 from skimage.metrics import structural_similarity as ssim
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 # Define the upload folder
 UPLOAD_FOLDER = 'uploads'
