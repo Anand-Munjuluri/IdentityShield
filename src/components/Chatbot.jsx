@@ -15,11 +15,10 @@ function ChatBot() {
   const [showBasicDetails, setShowBasicDetails] = useState(true);
   const [basicDetailsIndex, setBasicDetailsIndex] = useState(0);
   const [basicDetails, setBasicDetails] = useState({
-    name: '',
-    dob: '',
-    address: '',
-    panAadhaar: '',
-    signature: '',
+    Name: '',
+    birthdate: '',
+    Address: '',
+    Aadhaar: '',
     incomeRange: '',
     employmentType: '',
   });
@@ -100,28 +99,30 @@ function ChatBot() {
       text: value,
     };
     // Add the user's message to the messages state
-    setMessages([...messages, newUserMessage]);
+    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
   
-    const newBasicDetails = { ...basicDetails };
-    newBasicDetails[detail] = value;
-    setBasicDetails(newBasicDetails);
+    // Move the update of basicDetails state after generating AI response
+    setTimeout(() => {
+      const newBasicDetails = { ...basicDetails };
+      newBasicDetails[detail] = value;
+      setBasicDetails(newBasicDetails);
   
-    const newIndex = basicDetailsIndex + 1;
-    setBasicDetailsIndex(newIndex); // Increment the index to move to the next detail
+      const newIndex = basicDetailsIndex + 1;
+      setBasicDetailsIndex(newIndex); // Increment the index to move to the next detail
   
-    if (newIndex >= Object.keys(basicDetails).length) {
-      setShowBasicDetails(false);
-      setShowStartKYC(true);
-      toast.success('Basic info collected');
+      if (newIndex >= Object.keys(basicDetails).length) {
+        setShowBasicDetails(false);
+        setShowStartKYC(true);
+        toast.success('Basic info collected');
   
-      setTimeout(() => {
-        generateResponse('Start KYC'); // AI response for starting KYC
-      }, 1000);
-    } else {
-      generateBasicDetailsResponse(); // Ask for the next basic detail
-    }
+        setTimeout(() => {
+          generateResponse('Start KYC'); // AI response for starting KYC
+        }, 2000);
+      } else {
+        generateBasicDetailsResponse(); // Ask for the next basic detail
+      }
+    }, 1000);
   };
-  
   
 
 
@@ -185,7 +186,7 @@ function ChatBot() {
         response = 'You can contact support via email at support@identityshield.com';
         break;
       case 'Start KYC':
-        response = 'You have started the K-Y-C process. Please upload your Aadhar or PAN soft copy.';
+        response = 'You have started the K-Y-C process, Click on Start K-Y-C and Please upload your Aadhar/Pan softcopy and then upload your selfie';
         break;
       default:
         response = "Sorry, I didn't understand that.";
