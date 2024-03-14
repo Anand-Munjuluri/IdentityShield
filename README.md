@@ -12,6 +12,7 @@ for better quality -> <a href="https://drive.google.com/file/d/1-oe8YR1uPeTyld9k
 
 To set up IdentityShield locally, follow these steps:
 
+For backend:
 1. *Clone the Repository*: 
    ```bash
    git clone https://github.com/Anand-Munjuluri/IdentityShield.git
@@ -20,7 +21,7 @@ To set up IdentityShield locally, follow these steps:
 2. Install Dependencies:
 
    ```bash
-      cd IdentityShield
+      cd IdentityShield/backend
       pip install -r requirements.txt
    ```
 3. Run the Application:
@@ -32,6 +33,23 @@ To set up IdentityShield locally, follow these steps:
 4. Access the Application:
    
       Open a web browser and navigate to http://localhost:5000.
+
+for frontend:
+
+1. Install Dependencies:
+
+   ```bash
+      npm install
+   ```
+2. Run the Application:
+
+   ```bash
+   npm start
+   ```
+      
+3. Access the Application:
+   
+      Open a web browser and navigate to localhost
 
 ## Technologies Used
   
