@@ -53,17 +53,18 @@ for frontend:
 
 ## Technologies Used
   
-          **Flask**: Python web framework for backend development.  
-          **OpenCV**: Library for computer vision tasks such as face detection and image processing.  
-          **Skimage**: Library for facial comparison.  
-          **HTML/CSS/JavaScript**: Frontend technologies for building the user interface.  
+          **Flask**: Python web framework for backend development.  
+          **OpenCV**: Library for computer vision tasks such as face detection and image processing.  
+          **Skimage**: Library for facial comparison.  
+          **HTML/CSS/JavaScript**: Frontend technologies for building the user interface.  
   
     
 ## User Flow
           **Homepage**: Users are directed to the homepage upon accessing the application.  
+          **Filling Basic Details**: Users are prompted to fill the basic details before the verification starts.  
           **Image Upload**: Users upload their selfie and ID image.  
           **Face Matching**: The system compares the uploaded selfie with the ID image to verify identity.  
-          **Signature Extraction**: Users can extract their signature from an image.  
+          **Signature Extraction**: Users can capture their signature and the backend extracts the signature from image.    
           **Signature Verification**: The system verifies the extracted signature.  
 
 
@@ -72,8 +73,8 @@ for frontend:
           **Signature Extraction**: Extracts the signature from an uploaded image.  
           **Signature Verification**: Verifies the extracted signature.  
           **User-friendly Interface**: Provides an intuitive interface for smooth user interaction.  
-          **Multi Lingual Support**: Messages are available in over 50 Languages to accomodate wide range of users          
-          **Cross-Origin Resource Sharing (CORS)**: Enables communication between frontend and backend on different domains.  
+          **Multi Lingual Support**: Messages are available in over 50 Languages to accomodate wide range of users.  
+          **Cross-Origin Resource Sharing (CORS)**: Enables communication between frontend and backend on different domains.  
 
 
 ## Backend Workflow:
