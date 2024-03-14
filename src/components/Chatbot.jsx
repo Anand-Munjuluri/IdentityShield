@@ -171,6 +171,18 @@ function ChatBot() {
     }
   };
 
+  const handleKYCCompletion = () => {
+    const completionMessage = "Your K-Y-C is completed successfully. You will shortly receive an email and SMS with more details.";
+    const newMessage = {
+      id: messages.length + 1,
+      sender: 'Shield AI',
+      text: completionMessage,
+    };
+    setMessages([...messages, newMessage]);
+    speakText(completionMessage, 'en-IN');
+  };
+  
+
   const handleSignatureCapture = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -197,7 +209,8 @@ function ChatBot() {
   
       // Hide video and capture image options after successful verification
       setShowCaptureImage(false);
-      setShowVideo(false); // Update showVideo state to hide the video
+      setShowVideo(false);
+      handleKYCCompletion(); // Update showVideo state to hide the video
     }, 2500);
   };
   
@@ -209,7 +222,7 @@ function ChatBot() {
         response = 'Identity Shield is a comprehensive security solution...';
         break;
       case 'Get started with Identity Shield':
-        response = 'To get started with Identity Shield, please follow these steps...';
+        response = 'To get started with Identity Shield, please follow these steps: Type Hi in Input box to start giving basic details, after giving basic details, click on start K-Y-C and follow the Instructions given';
         break;
       case 'Contact support':
         response = 'You can contact support via email at support@identityshield.com';
@@ -229,7 +242,7 @@ function ChatBot() {
         text: response,
       };
       setMessages((prevMessages) => [...prevMessages, newMessage]);
-      speakText(response, 'en-IN');
+      speakText(response, 'en-US');
     }, 1000);
   };
 
