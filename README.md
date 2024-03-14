@@ -2,6 +2,12 @@
 
 Welcome to IdentityShield, a comprehensive identity verification system designed to ensure secure transactions and protect against identity theft. This documentation provides guidance on setting up the project locally, outlines the technologies utilized, describes the user flow, and highlights key features.
 
+## Video Demo
+
+
+https://github.com/Anand-Munjuluri/IdentityShield/assets/69068704/1c2ffa52-4a9c-43c2-bc08-f1c606966aba
+
+for better quality -> <a href="https://drive.google.com/file/d/1-oe8YR1uPeTyld9kgx0mjEaBotaChl0o/view">View Here</a>
 ## How to Setup Locally
 
 To set up IdentityShield locally, follow these steps:
@@ -90,7 +96,7 @@ To set up IdentityShield locally, follow these steps:
                     Munjuluri Naga Gopala Jagganatha Surya Anand (RA2111003010143)  
                     Nishaanth Balakrishnan (RA2111003010144)  
                     Sanjayraja Sreeraja (RA2111003010161)  
-                    Amritha R (RA2111003010144)  
+                    Amritha R (RA2111003010173)  
                     Adiraju Aditya (RA2111003010198)  
                     Meenakshi Sundharam (RA2111003010346)  
                     
