@@ -13,6 +13,7 @@ function ChatBot() {
   const [showStartKYC, setShowStartKYC] = useState(false);
   const [showUploadDocument, setShowUploadDocument] = useState(false);
   const [showBasicDetails, setShowBasicDetails] = useState(true);
+  const [showVideo, setShowVideo] = useState(true); // Add this state variable
   const [basicDetailsIndex, setBasicDetailsIndex] = useState(0);
   const [basicDetails, setBasicDetails] = useState({
     Name: '',
@@ -27,6 +28,7 @@ function ChatBot() {
   const [matchPercentage, setMatchPercentage] = useState(null);
   const [showCaptureSignature, setShowCaptureSignature] = useState(false);
   const [signatureFile, setSignatureFile] = useState(null);
+  const [showCaptureImage, setShowCaptureImage] = useState(false); // New state variable
 
   const videoRef = useRef();
   const messagesEndRef = useRef(null);
@@ -57,7 +59,6 @@ function ChatBot() {
         generateResponse(option);
         break;
       case 'Give Basic Details':
-
         setBasicDetailsIndex(0);
         generateBasicDetailsResponse();
         break;
@@ -174,52 +175,33 @@ function ChatBot() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoRef.current.srcObject = stream;
-    videoRef.current.play(); // Start video playback
+      videoRef.current.play(); // Start video playback
 
-      // Display the camera stream in the video element
-  
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-  
-      // Capture photo from the video stream
-      const capturePhoto = () => {
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        const photo = canvas.toDataURL('image/jpeg');
-        return photo;
-      };
-  
-      // Function to stop the camera stream
-      const stopStream = () => {
-        stream.getTracks().forEach(track => track.stop());
-      };
-  
-      // Capture the photo when the user clicks the capture button
-      const handleCaptureButtonClick = () => {
-        const photo = capturePhoto();
-        stopStream();
-        // Send the captured photo to the backend for verification
-        // Here you should send the photo data (in base64 format) to the backend using fetch or any other method
-        // After receiving the response from the backend, handle the verification process
-        toast.success("Signature captured successfully");
-      };
-  
-      // Display the capture button after the camera stream is loaded
-      setShowCaptureSignature(true);
-  
-      // Clean up function to stop the camera stream when unmounting or leaving this section
-      return () => {
-        setShowCaptureSignature(false);
-        stopStream();
-      };
-  
+      // Hide the capture signature button and show the capture image option
+      setShowCaptureSignature(false);
+      setShowCaptureImage(true);
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast.error("Failed to access the camera");
     }
   };
+
+  const handleCaptureImage = () => {
+    // Display a toast indicating processing signature
+    toast.info("Processing signature...");
   
+    // Simulate processing time (2.5 seconds)
+    setTimeout(() => {
+      // Assuming verification is successful, display a toast for successful verification
+      toast.success("Signature verified successfully");
+  
+      // Hide video and capture image options after successful verification
+      setShowCaptureImage(false);
+      setShowVideo(false); // Update showVideo state to hide the video
+    }, 2500);
+  };
+  
+
   const generateResponse = (option) => {
     let response;
     switch (option) {
@@ -312,12 +294,17 @@ function ChatBot() {
             </div>
           )}
           {showCaptureSignature && (
-  <div>
-    <p>Please capture your signature on a white paper</p>
-    {/* Signature capture component can be placed here */}
-    <button onClick={handleSignatureCapture}>Capture Signature</button>
-  </div>
-)}
+            <div>
+              <p>Please capture your signature on a white paper</p>
+              <button onClick={handleSignatureCapture}>Capture Signature</button>
+            </div>
+          )}
+          {showCaptureImage && ( // Conditionally render the capture image option
+            <div>
+              <p>Please capture your image</p>
+              <button onClick={handleCaptureImage}>Capture Image</button>
+            </div>
+          )}
 
           {showBasicDetails && (
             <button onClick={() => handleOptionClick('Give Basic Details')}>
@@ -346,13 +333,10 @@ function ChatBot() {
               />
               <button type="submit">Send</button>
             </form>
-           
           </div>
         )}
-
-        
       </div>
-      <video ref={videoRef} id="video" />
+      {showVideo && <video ref={videoRef} id="video" />} {/* Update this line */}
     </div>
   );
 }
