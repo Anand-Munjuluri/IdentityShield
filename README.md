@@ -48,11 +48,8 @@ To set up IdentityShield locally, follow these steps:
           **Signature Extraction**: Extracts the signature from an uploaded image.  
           **Signature Verification**: Verifies the extracted signature.  
           **User-friendly Interface**: Provides an intuitive interface for smooth user interaction.  
+          **Multi Lingual Support**: Messages are available in over 50 Languages to accomodate wide range of users
           **Cross-Origin Resource Sharing (CORS)**: Enables communication between frontend and backend on different domains.  
-
-
-## Conclusion
-          IdentityShield offers a robust solution for identity verification, leveraging advanced technologies such as facial recognition and signature extraction. Its user-friendly interface and powerful features ensure a secure and seamless verification process, enhancing security and trust in digital transactions.
 
 
 ## Backend Workflow:
@@ -85,3 +82,15 @@ To set up IdentityShield locally, follow these steps:
                     Flask provides RESTful APIs that the React frontend interacts with.  
                     React makes HTTP requests to the Flask backend to send images and receive verification results.  
                     The frontend updates the user interface based on the verification results received from the backend.  
+
+## Conclusion
+          IdentityShield offers a robust solution for identity verification, leveraging advanced technologies such as facial recognition and signature extraction. Its user-friendly interface and powerful features ensure a secure and seamless verification process, enhancing security and trust in digital transactions.
+
+## Contributer
+                    Munjuluri Naga Gopala Jagganatha Surya Anand (RA2111003010143)  
+                    Nishaanth Balakrishnan (RA2111003010144)  
+                    Sanjayraja Sreeraja (RA2111003010161)  
+                    Amritha R (RA2111003010144)  
+                    Adiraju Aditya (RA2111003010198)  
+                    Meenakshi Sundharam (RA2111003010346)  
+                    
