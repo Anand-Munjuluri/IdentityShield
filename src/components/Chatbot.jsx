@@ -26,6 +26,27 @@ function ChatBot() {
     incomeRange: '',
     employmentType: '',
   });
+
+  useEffect(() => {
+    // Check if the Google Translate script has already been appended
+    if (!document.getElementById('google_translate_script')) {
+      const script = document.createElement('script');
+      script.id = 'google_translate_script';
+      script.type = 'text/javascript';
+      script.innerHTML = `
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+        }
+      `;
+      document.body.appendChild(script);
+  
+      const translateScript = document.createElement('script');
+      translateScript.type = 'text/javascript';
+      translateScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      translateScript.id = 'google_translate_element_script';
+      document.body.appendChild(translateScript);
+    }
+  }, []);
   const [selfieFile, setSelfieFile] = useState(null);
   const [idFile, setIdFile] = useState(null);
   const [matchPercentage, setMatchPercentage] = useState(null);
@@ -280,6 +301,7 @@ function ChatBot() {
 
   return (
     <div className="chat-app-container">
+      <div id="google_translate_element" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: '9999' }}></div>
       <header className="chat-header">
       <img src={Logo} alt="Logo" />;
       </header>
