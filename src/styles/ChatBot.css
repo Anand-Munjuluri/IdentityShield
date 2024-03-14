@@ -1,13 +1,15 @@
 /* ChatBot.css */
 
+/* Overall chat application container */
 .chat-app-container {
-  width: 1000px;
+  width: 100%;
   height: 100vh;
 }
 
+/* Header styling */
 .chat-header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center; /* Center align header content */
   margin-bottom: 20px;
 }
 
@@ -16,6 +18,7 @@
   color: #333;
 }
 
+/* Main chat container */
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -23,6 +26,7 @@
   height: calc(100% - 50px); /* Adjusted for header */
 }
 
+/* Styling for the wrapper around messages */
 .messages-wrapper {
   width: 100%;
   max-width: 800px;
@@ -31,6 +35,7 @@
   overflow-y: auto; /* Added to enable scrolling if messages overflow */
 }
 
+/* Styling for individual messages */
 .messages {
   height: 100%;
 }
@@ -44,18 +49,21 @@
   border-radius: 10px;
 }
 
+/* AI message styling */
 .message.ai {
   align-self: flex-start;
   background-color: #000000;
   color: white; /* Added for better readability */
 }
 
+/* User message styling */
 .message.user {
   align-self: flex-end;
   background-color: #4a90e2;
   color: white;
 }
 
+/* Styling for user input section */
 .user-input {
   width: 100%;
   display: flex;
@@ -85,6 +93,7 @@
   background-color: #3572b0;
 }
 
+/* Styling for options container */
 .options-container {
   display: flex;
   flex-wrap: wrap;
@@ -105,4 +114,10 @@
 
 .options-container button:hover {
   background-color: #3572b0;
+}
+
+video#video {
+  width: 50%;
+  height: auto;
+  margin-left: 25%;
 }

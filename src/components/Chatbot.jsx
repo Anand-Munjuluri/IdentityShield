@@ -25,6 +25,8 @@ function ChatBot() {
   const [selfieFile, setSelfieFile] = useState(null);
   const [idFile, setIdFile] = useState(null);
   const [matchPercentage, setMatchPercentage] = useState(null);
+  const [showCaptureSignature, setShowCaptureSignature] = useState(false);
+  const [signatureFile, setSignatureFile] = useState(null);
 
   const videoRef = useRef();
   const messagesEndRef = useRef(null);
@@ -40,7 +42,7 @@ function ChatBot() {
       text: option,
     };
     setMessages([...messages, newMessage]);
-  
+
     switch (option) {
       case 'What is Identity Shield?':
         setShowWhatIs(false);
@@ -54,13 +56,8 @@ function ChatBot() {
         setShowContactSupport(false);
         generateResponse(option);
         break;
-      case 'Give Basic Info':
-        setShowWhatIs(false);
-        setShowGetStarted(false);
-        setShowContactSupport(false);
-        setShowStartKYC(false);
-        setShowUploadDocument(false);
-        setShowBasicDetails(true);
+      case 'Give Basic Details':
+
         setBasicDetailsIndex(0);
         generateBasicDetailsResponse();
         break;
@@ -73,7 +70,7 @@ function ChatBot() {
         break;
     }
   };
-  
+
   const generateBasicDetailsResponse = () => {
     const basicDetailKeys = Object.keys(basicDetails);
     if (basicDetailsIndex < basicDetailKeys.length) {
@@ -91,7 +88,7 @@ function ChatBot() {
     event.preventDefault();
     const detail = Object.keys(basicDetails)[basicDetailsIndex];
     const value = event.target.elements.input.value;
-  
+
     // Create a new message for the user's response
     const newUserMessage = {
       id: messages.length + 1,
@@ -100,31 +97,29 @@ function ChatBot() {
     };
     // Add the user's message to the messages state
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
-  
+
     // Move the update of basicDetails state after generating AI response
     setTimeout(() => {
       const newBasicDetails = { ...basicDetails };
       newBasicDetails[detail] = value;
       setBasicDetails(newBasicDetails);
-  
+
       const newIndex = basicDetailsIndex + 1;
       setBasicDetailsIndex(newIndex); // Increment the index to move to the next detail
-  
-      if (newIndex >= Object.keys(basicDetails).length) {
+
+      if (newIndex < Object.keys(basicDetails).length) {
+        generateBasicDetailsResponse(); // Ask for the next basic detail
+      } else {
         setShowBasicDetails(false);
         setShowStartKYC(true);
         toast.success('Basic info collected');
-  
+
         setTimeout(() => {
           generateResponse('Start KYC'); // AI response for starting KYC
         }, 2000);
-      } else {
-        generateBasicDetailsResponse(); // Ask for the next basic detail
       }
     }, 1000);
   };
-  
-
 
   const handleFileChange = (event, stateSetter) => {
     const file = event.target.files[0];
@@ -163,6 +158,8 @@ function ChatBot() {
 
       if (matchPercentage > 30) {
         toast.success("Face verification successful");
+        setShowCaptureSignature(true);
+        setShowUploadDocument(false); // Hide the upload images button
       } else {
         toast.error("Face verification not successful");
       }
@@ -173,6 +170,56 @@ function ChatBot() {
     }
   };
 
+  const handleSignatureCapture = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoRef.current.srcObject = stream;
+    videoRef.current.play(); // Start video playback
+
+      // Display the camera stream in the video element
+  
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+  
+      // Capture photo from the video stream
+      const capturePhoto = () => {
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const photo = canvas.toDataURL('image/jpeg');
+        return photo;
+      };
+  
+      // Function to stop the camera stream
+      const stopStream = () => {
+        stream.getTracks().forEach(track => track.stop());
+      };
+  
+      // Capture the photo when the user clicks the capture button
+      const handleCaptureButtonClick = () => {
+        const photo = capturePhoto();
+        stopStream();
+        // Send the captured photo to the backend for verification
+        // Here you should send the photo data (in base64 format) to the backend using fetch or any other method
+        // After receiving the response from the backend, handle the verification process
+        toast.success("Signature captured successfully");
+      };
+  
+      // Display the capture button after the camera stream is loaded
+      setShowCaptureSignature(true);
+  
+      // Clean up function to stop the camera stream when unmounting or leaving this section
+      return () => {
+        setShowCaptureSignature(false);
+        stopStream();
+      };
+  
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      toast.error("Failed to access the camera");
+    }
+  };
+  
   const generateResponse = (option) => {
     let response;
     switch (option) {
@@ -238,6 +285,7 @@ function ChatBot() {
             <div ref={messagesEndRef} />
           </div>
         </div>
+
         <div className="options-container">
           <h3>Click the options below to continue</h3>
           {showWhatIs && (
@@ -263,32 +311,46 @@ function ChatBot() {
               <button onClick={handleUploadImages}>Upload Images</button>
             </div>
           )}
-          {showBasicDetails && (
-  <div className="basic-details-form">
-    <form onSubmit={handleBasicDetailsSubmit}>
-    <input 
-  type="text" 
-  id="input" 
-  value={basicDetails[Object.keys(basicDetails)[basicDetailsIndex]] || ''}
-  onChange={(event) => {
-    const detail = Object.keys(basicDetails)[basicDetailsIndex];
-    const newValue = event.target.value;
-    setBasicDetails((prevState) => ({
-      ...prevState,
-      [detail]: newValue,
-    }));
-  }}
-/>
-
-
-      <button type="submit">Send</button>
-    </form>
+          {showCaptureSignature && (
+  <div>
+    <p>Please capture your signature on a white paper</p>
+    {/* Signature capture component can be placed here */}
+    <button onClick={handleSignatureCapture}>Capture Signature</button>
   </div>
 )}
+
+          {showBasicDetails && (
+            <button onClick={() => handleOptionClick('Give Basic Details')}>
+              Give Basic Details
+            </button>
+          )}
 
           {matchPercentage && <p>Match percentage: {matchPercentage}</p>}
           <ToastContainer />
         </div>
+        {showBasicDetails && (
+          <div className="basic-details-form">
+            <form onSubmit={handleBasicDetailsSubmit}>
+              <input
+                type="text"
+                id="input"
+                value={basicDetails[Object.keys(basicDetails)[basicDetailsIndex]] || ''}
+                onChange={(event) => {
+                  const detail = Object.keys(basicDetails)[basicDetailsIndex];
+                  const newValue = event.target.value;
+                  setBasicDetails((prevState) => ({
+                    ...prevState,
+                    [detail]: newValue,
+                  }));
+                }}
+              />
+              <button type="submit">Send</button>
+            </form>
+           
+          </div>
+        )}
+
+        
       </div>
       <video ref={videoRef} id="video" />
     </div>
