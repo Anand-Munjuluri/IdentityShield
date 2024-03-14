@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../styles/ChatBot.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import logo from '../../public/logosvg.png'; // Import your logo image
 function ChatBot() {
+
   const [messages, setMessages] = useState([
     { id: 1, sender: 'Shield AI', text: 'Hello! Please fill your details before starting KYC, Start with a Hi' },
   ]);
@@ -36,6 +37,28 @@ function ChatBot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   useEffect(scrollToBottom, [messages]);
+
+  useEffect(() => {
+    // Check if the Google Translate script has already been appended
+    if (!document.getElementById('google_translate_script')) {
+      const script = document.createElement('script');
+      script.id = 'google_translate_script';
+      script.type = 'text/javascript';
+      script.innerHTML = `
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+        }
+      `;
+      document.body.appendChild(script);
+  
+      const translateScript = document.createElement('script');
+      translateScript.type = 'text/javascript';
+      translateScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      translateScript.id = 'google_translate_element_script';
+      document.body.appendChild(translateScript);
+    }
+  }, []);
+  
 
   const handleOptionClick = (option) => {
     const newMessage = {
@@ -258,8 +281,10 @@ function ChatBot() {
 
   return (
     <div className="chat-app-container">
+        <div id="google_translate_element" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: '9999' }}></div>
       <header className="chat-header">
-        <h1>Identity Shield</h1>
+      <img src={logo} alt="Logo"  />
+ {/* Replace the header text with your logo */}
       </header>
       <div className="chat-container">
         <div className="messages-wrapper">
