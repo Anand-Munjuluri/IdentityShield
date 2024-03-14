@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
+from flask import Flask, render_template, request, jsonify, send_file
+from flask_cors import CORS
 import cv2
 import os
 import face_recognition
@@ -12,8 +14,10 @@ from skimage import measure, morphology
 from skimage.color import label2rgb
 from skimage.measure import regionprops
 import numpy as np
+import numpy as np
 
 app = Flask(__name__)
+CORS(app)
 CORS(app)
 
 # Define the upload folder
@@ -169,6 +173,56 @@ def predict_ID(image_path):
     predictions = model.predict(img_array)
     return predictions
 
+
+# Function to extract signature from an image
+def extract_signature(image_path):
+    # Load the image
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # Apply thresholding to binarize the image
+    _, binary_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    # Find contours of the signature
+    contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Find the largest contour (assumed to be the signature)
+    max_contour = max(contours, key=cv2.contourArea)
+
+    # Create a mask for the signature
+    mask = np.zeros_like(image)
+    cv2.drawContours(mask, [max_contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+
+    # Extract the signature using the mask
+    extracted_signature = cv2.bitwise_and(image, mask)
+
+    return extracted_signature
+
+# Route to handle signature extraction
+@app.route('/extract_signature', methods=['POST'])
+def handle_extract_signature():
+    # Check if an image was uploaded
+    if 'image' not in request.files:
+        return jsonify({"error": "Please upload an image."}), 400
+
+    image_file = request.files['image']
+
+    # Check if the file has a valid extension
+    if image_file.filename == '' or not allowed_file(image_file.filename):
+        return jsonify({"error": "Invalid file format. Please upload an image in PNG, JPG, or JPEG format."}), 400
+
+    # Save the uploaded image
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'signature.png')
+    image_file.save(image_path)
+
+    # Extract the signature
+    extracted_signature = extract_signature(image_path)
+
+    # Save the extracted signature
+    extracted_signature_path = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_signature.png')
+    cv2.imwrite(extracted_signature_path, extracted_signature)
+
+    # Return the path to the extracted signature
+    return send_file(extracted_signature_path, mimetype='image/png')
 
 if __name__ == '__main__':
     app.run(debug=True)
