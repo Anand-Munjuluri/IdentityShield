@@ -72,8 +72,8 @@ for frontend:
           **Signature Extraction**: Extracts the signature from an uploaded image.  
           **Signature Verification**: Verifies the extracted signature.  
           **User-friendly Interface**: Provides an intuitive interface for smooth user interaction.  
-          **Multi Lingual Support**: Messages are available in over 50 Languages to accomodate wide range of users
-          **Cross-Origin Resource Sharing (CORS)**: Enables communication between frontend and backend on different domains.  
+          **Multi Lingual Support**: Messages are available in over 50 Languages to accomodate wide range of users          
+          **Cross-Origin Resource Sharing (CORS)**: Enables communication between frontend and backend on different domains.  
 
 
 ## Backend Workflow:
