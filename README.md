@@ -111,7 +111,7 @@ for frontend:
 ## Conclusion
           IdentityShield offers a robust solution for identity verification, leveraging advanced technologies such as facial recognition and signature extraction. Its user-friendly interface and powerful features ensure a secure and seamless verification process, enhancing security and trust in digital transactions.
 
-## Contributer
+## Contributors
                     Munjuluri Naga Gopala Jagganadha Surya Anand (RA2111003010143)  
                     Nishaanth Balakrishnan (RA2111003010144)  
                     Sanjayraja Sreeraja (RA2111003010161)  
