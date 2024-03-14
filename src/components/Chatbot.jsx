@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../styles/ChatBot.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import logo from '../../public/logosvg.png'; // Import your logo image
-function ChatBot() {
+import Logo from '../../public/logosvg.png'
 
+function ChatBot() {
   const [messages, setMessages] = useState([
     { id: 1, sender: 'Shield AI', text: 'Hello! Please fill your details before starting KYC, Start with a Hi' },
   ]);
@@ -18,6 +18,8 @@ function ChatBot() {
   const [basicDetailsIndex, setBasicDetailsIndex] = useState(0);
   const [basicDetails, setBasicDetails] = useState({
     Name: '',
+    email: '',
+    phoneNumber: '',
     birthdate: '',
     Address: '',
     Aadhaar: '',
@@ -33,32 +35,6 @@ function ChatBot() {
 
   const videoRef = useRef();
   const messagesEndRef = useRef(null);
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-  useEffect(scrollToBottom, [messages]);
-
-  useEffect(() => {
-    // Check if the Google Translate script has already been appended
-    if (!document.getElementById('google_translate_script')) {
-      const script = document.createElement('script');
-      script.id = 'google_translate_script';
-      script.type = 'text/javascript';
-      script.innerHTML = `
-        function googleTranslateElementInit() {
-          new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
-        }
-      `;
-      document.body.appendChild(script);
-  
-      const translateScript = document.createElement('script');
-      translateScript.type = 'text/javascript';
-      translateScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      translateScript.id = 'google_translate_element_script';
-      document.body.appendChild(translateScript);
-    }
-  }, []);
-  
 
   const handleOptionClick = (option) => {
     const newMessage = {
@@ -97,7 +73,7 @@ function ChatBot() {
 
   const generateBasicDetailsResponse = () => {
     const basicDetailKeys = Object.keys(basicDetails);
-    if (basicDetailsIndex < basicDetailKeys.length) {
+    if (basicDetailsIndex < basicDetailKeys.length && messages[messages.length - 1].sender === 'User') {
       const detail = basicDetailKeys[basicDetailsIndex];
       const newMessage = {
         id: messages.length + 1,
@@ -107,43 +83,66 @@ function ChatBot() {
       setMessages([...messages, newMessage]);
     }
   };
-
+  
   const handleBasicDetailsSubmit = (event) => {
     event.preventDefault();
+  
     const detail = Object.keys(basicDetails)[basicDetailsIndex];
     const value = event.target.elements.input.value;
-
-    // Create a new message for the user's response
+  
+    if (!value.trim()) {
+      alert('Please enter something.');
+      return;
+    }
+  
+    // **1. Create user message immediately:**
     const newUserMessage = {
       id: messages.length + 1,
       sender: 'User',
       text: value,
     };
-    // Add the user's message to the messages state
-    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
-
-    // Move the update of basicDetails state after generating AI response
+  
+    // **2. Create AI message asking for the next detail:**
+    const newAIMessage = {
+      id: messages.length + 1,
+      sender: 'Shield AI',
+      text: `Please provide your ${detail}:`
+    };
+    
+    if (detail === 'employmentType') {
+      newAIMessage.text = 'Thank you for providing your basic details';
+    }
+    
+  
+    // Update messages state with both user and AI messages
+    setMessages([...messages, newUserMessage, newAIMessage]);
+  
+    // **3. Delay basic details update:**
     setTimeout(() => {
       const newBasicDetails = { ...basicDetails };
       newBasicDetails[detail] = value;
       setBasicDetails(newBasicDetails);
-
+  
       const newIndex = basicDetailsIndex + 1;
-      setBasicDetailsIndex(newIndex); // Increment the index to move to the next detail
-
+      setBasicDetailsIndex(newIndex); // Increment index for next detail
+  
       if (newIndex < Object.keys(basicDetails).length) {
-        generateBasicDetailsResponse(); // Ask for the next basic detail
+        generateBasicDetailsResponse(); // Ask for next detail
       } else {
         setShowBasicDetails(false);
         setShowStartKYC(true);
         toast.success('Basic info collected');
-
+  
+        // **4. Delay AI message after 2 seconds:**
         setTimeout(() => {
-          generateResponse('Start KYC'); // AI response for starting KYC
+          generateResponse('Start KYC'); // AI response after 2 seconds
         }, 2000);
       }
-    }, 1000);
+    }, 1000); // Basic details update delayed by 1 second
   };
+  
+  
+  
 
   const handleFileChange = (event, stateSetter) => {
     const file = event.target.files[0];
@@ -195,7 +194,7 @@ function ChatBot() {
   };
 
   const handleKYCCompletion = () => {
-    const completionMessage = "Your K-Y-C is completed successfully. You will shortly receive an email and SMS with more details.";
+    const completionMessage = "Your K-Y-C is completed successfully.You may close this window now, You will shortly receive an email and SMS with more details.";
     const newMessage = {
       id: messages.length + 1,
       sender: 'Shield AI',
@@ -242,7 +241,7 @@ function ChatBot() {
     let response;
     switch (option) {
       case 'What is Identity Shield?':
-        response = 'Identity Shield is a comprehensive security solution...';
+        response = 'Identity Shield is a comprehensive KYC Solution designed to streamline identity verification processes, ensuring compliance and security for businesses and their customers.';
         break;
       case 'Get started with Identity Shield':
         response = 'To get started with Identity Shield, please follow these steps: Type Hi in Input box to start giving basic details, after giving basic details, click on start K-Y-C and follow the Instructions given';
@@ -281,10 +280,8 @@ function ChatBot() {
 
   return (
     <div className="chat-app-container">
-        <div id="google_translate_element" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: '9999' }}></div>
       <header className="chat-header">
-      <img src={logo} alt="Logo"  />
- {/* Replace the header text with your logo */}
+      <img src={Logo} alt="Logo" />;
       </header>
       <div className="chat-container">
         <div className="messages-wrapper">
@@ -349,8 +346,6 @@ function ChatBot() {
               Give Basic Details
             </button>
           )}
-
-          {matchPercentage && <p>Match percentage: {matchPercentage}</p>}
           <ToastContainer />
         </div>
         {showBasicDetails && (

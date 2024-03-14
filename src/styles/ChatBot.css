@@ -1,125 +1,108 @@
 /* ChatBot.css */
 
-/* Overall chat application container */
-.chat-app-container {
-  width: 100%;
-  height: 100vh;
-  position:absolute;
-}
-
-/* Header styling */
-.chat-header {
+body {
   display: flex;
-  justify-content: center; /* Center align header content */
-  margin-bottom: 20px;
+  justify-content: center;
+  height: 100vh; /* Utilize full viewport height */
+  margin: 0;
+  background-color: #f0f0f0; /* Light gray background color */
+  color: #000; /* Black color for text */
 }
 
-.chat-header h1 {
-  font-size: 24px;
-  color: #333;
+.chat-app-container {
+  width: 90%; /* Adjust the width as needed */
+  max-width: 800px; /* Set a maximum width to prevent it from getting too wide */
+  height: 90vh; /* Utilize 90% of the viewport height */
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+  padding: 20px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #F7F7F7; /* Light gray background color */
 }
 
-/* Main chat container */
+.chat-header {
+  text-align: center;
+
+}
+
 .chat-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  height: calc(100% - 50px); /* Adjusted for header */
 }
 
-/* Styling for the wrapper around messages */
 .messages-wrapper {
-  width: 100%;
-  max-width: 800px;
-  height: calc(100% - 110px); /* Adjusted for options and input */
-  padding: 0 20px; /* Adjusted for better padding */
-  overflow-y: auto; /* Added to enable scrolling if messages overflow */
+  flex: 1;
+  overflow-y: auto; /* Enable vertical scrolling */
+
 }
 
-/* Styling for individual messages */
 .messages {
-  height: 100%;
-}
-
-.message {
   display: flex;
   flex-direction: column;
+}
+
+.messages > div {
   margin-bottom: 10px;
-  padding: 10px;
-  width: 100%;
+}
+
+.user .text {
+  background-color: #000; /* Black color for user messages */
+  color: #fff; /* White color for text */
   border-radius: 10px;
-}
-
-/* AI message styling */
-.message.ai {
-  align-self: flex-start;
-  background-color: #000000;
-  color: white; /* Added for better readability */
-}
-
-/* User message styling */
-.message.user {
+  padding: 8px 12px;
+  max-width: 70%; /* Limit the width of user messages */
   align-self: flex-end;
-  background-color: #4a90e2;
-  color: white;
 }
 
-/* Styling for user input section */
-.user-input {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.ai .text {
+  background-color: #fff; /* White color for AI messages */
+  color: #000; /* Black color for text */
+  border-radius: 10px;
+  padding: 8px 12px;
+  max-width: 70%; /* Limit the width of AI messages */
+}
+
+.options-container {
   margin-top: 20px;
 }
 
-.user-input input[type="text"] {
-  flex: 1;
-  margin-right: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-.user-input button {
-  padding: 10px 20px;
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.user-input button:hover {
-  background-color: #3572b0;
-}
-
-/* Styling for options container */
-.options-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  padding: 0 20px;
-  width: 100%;
-}
-
 .options-container button {
-  margin: 5px;
+  margin-bottom: 10px;
   padding: 10px 20px;
-  background-color: #4a90e2;
-  color: white;
+  font-size: 16px;
+  background-color: #3855F4; /* Sky blue background color */
+  color: white; /* Black color for text */
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-.options-container button:hover {
-  background-color: #3572b0;
+.basic-details-form {
+  margin-top: 20px;
 }
 
-/* Styling for the video */
-video#video {
-  width: 50%;
-  height: auto;
-  margin: 20px; /* Adjusted margin for better spacing */
+.basic-details-form input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #000; /* Black color for border */
+}
+
+.basic-details-form button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #3855F4; /* Sky blue background color */
+  color: white; /* Black color for text */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#video {
+  width: 100%; /* Adjust the width of the video */
+  max-height: 400px; /* Set a maximum height for the video */
+  margin-top: 20px;
 }
