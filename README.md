@@ -9,7 +9,7 @@ Our website is tailored for the people worldwide, it supports more than 50 langu
 
 https://github.com/Anand-Munjuluri/IdentityShield/assets/69068704/1c2ffa52-4a9c-43c2-bc08-f1c606966aba
 
-for better quality -> <a href="https://drive.google.com/file/d/1-oe8YR1uPeTyld9kgx0mjEaBotaChl0o/view">View Here</a>
+for better video quality -> <a href="https://drive.google.com/file/d/1-oe8YR1uPeTyld9kgx0mjEaBotaChl0o/view">View Here</a>
 ## How to Setup Locally
 
 To set up IdentityShield locally, follow these steps:
