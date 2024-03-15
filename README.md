@@ -2,6 +2,8 @@
 
 Welcome to IdentityShield, a comprehensive identity verification system designed to ensure secure transactions and protect against identity theft. This documentation provides guidance on setting up the project locally, outlines the technologies utilized, describes the user flow, and highlights key features.
 
+Our product is also suitable for Physically Challenged, it is accessible, and outputs the speech of AI responses which is very comfortable for people who have speech impairment.
+Our website is tailored for the people worldwide, it supports more than 50 languages(multi-lingual support).
 ## Video Demo
 
 
@@ -60,12 +62,23 @@ for frontend:
   
     
 ## User Flow
+      
+   <img width="893" alt="image" src="https://github.com/Anand-Munjuluri/IdentityShield/assets/100225249/9d956754-358f-4c56-8571-98d4d18dd319">
+
           **Homepage**: Users are directed to the homepage upon accessing the application.  
           **Filling Basic Details**: Users are prompted to fill the basic details before the verification starts.  
           **Image Upload**: Users upload their selfie and ID image.  
           **Face Matching**: The system compares the uploaded selfie with the ID image to verify identity.  
-          **Signature Extraction**: Users can capture their signature and the backend extracts the signature from image.    
+          <img width="1319" alt="image" src="https://github.com/Anand-Munjuluri/IdentityShield/assets/100225249/0ca1bf50-c28b-40d0-87e4-a8fe88a3fe27">
+
+          **Signature Extraction**: Users can capture their signature and the backend extracts the signature from image.
+          <img width="625" alt="image" src="https://github.com/Anand-Munjuluri/IdentityShield/assets/100225249/4812b8c4-cbb9-4b5e-8148-cfd79bc04f9b">
+
           **Signature Verification**: The system verifies the extracted signature.  
+          <img width="1343" alt="image" src="https://github.com/Anand-Munjuluri/IdentityShield/assets/100225249/6c518cc5-8f85-4891-bd55-2f688b85285a">
+
+
+   
 
 
 ## Features
