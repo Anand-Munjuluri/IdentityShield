@@ -2,7 +2,7 @@
 
 Welcome to IdentityShield, a comprehensive identity verification system designed to ensure secure transactions and protect against identity theft. This documentation provides guidance on setting up the project locally, outlines the technologies utilized, describes the user flow, and highlights key features.
 
-Our product is also suitable for Physically Challenged, it is accessible, and outputs the speech of AI responses which is very comfortable for people who have speech impairment.
+Our product is also suitable for Physically Challenged, it is accessible, and outputs the speech of AI responses which is very comfortable for people who have hearing impairment.
 Our website is tailored for the people worldwide, it supports more than 50 languages(multi-lingual support).
 ## Video Demo
 
