@@ -1,8 +1,12 @@
+// ChatBot.js
 import React, { useState, useRef, useEffect } from 'react';
 import '../styles/ChatBot.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Logo from '../../public/logosvg.png'
+import Logo from '../../public/logosvg.png';
+import ChatMessage from './ChatMessage';
+import Options from './Options';
+import BasicDetailsForm from './BasicDetailsForm';
 
 function ChatBot() {
   const [messages, setMessages] = useState([
@@ -14,7 +18,7 @@ function ChatBot() {
   const [showStartKYC, setShowStartKYC] = useState(false);
   const [showUploadDocument, setShowUploadDocument] = useState(false);
   const [showBasicDetails, setShowBasicDetails] = useState(true);
-  const [showVideo, setShowVideo] = useState(true); // Add this state variable
+  const [showVideo, setShowVideo] = useState(true);
   const [basicDetailsIndex, setBasicDetailsIndex] = useState(0);
   const [basicDetails, setBasicDetails] = useState({
     Name: '',
@@ -47,12 +51,13 @@ function ChatBot() {
       document.body.appendChild(translateScript);
     }
   }, []);
+
   const [selfieFile, setSelfieFile] = useState(null);
   const [idFile, setIdFile] = useState(null);
   const [matchPercentage, setMatchPercentage] = useState(null);
   const [showCaptureSignature, setShowCaptureSignature] = useState(false);
   const [signatureFile, setSignatureFile] = useState(null);
-  const [showCaptureImage, setShowCaptureImage] = useState(false); // New state variable
+  const [showCaptureImage, setShowCaptureImage] = useState(false);
 
   const videoRef = useRef();
   const messagesEndRef = useRef(null);
@@ -116,14 +121,12 @@ function ChatBot() {
       return;
     }
   
-    // **1. Create user message immediately:**
     const newUserMessage = {
       id: messages.length + 1,
       sender: 'User',
       text: value,
     };
   
-    // **2. Create AI message asking for the next detail:**
     const newAIMessage = {
       id: messages.length + 1,
       sender: 'Shield AI',
@@ -135,36 +138,30 @@ function ChatBot() {
     }
     
   
-    // Update messages state with both user and AI messages
     setMessages([...messages, newUserMessage, newAIMessage]);
   
-    // **3. Delay basic details update:**
     setTimeout(() => {
       const newBasicDetails = { ...basicDetails };
       newBasicDetails[detail] = value;
       setBasicDetails(newBasicDetails);
   
       const newIndex = basicDetailsIndex + 1;
-      setBasicDetailsIndex(newIndex); // Increment index for next detail
+      setBasicDetailsIndex(newIndex);
   
       if (newIndex < Object.keys(basicDetails).length) {
-        generateBasicDetailsResponse(); // Ask for next detail
+        generateBasicDetailsResponse();
       } else {
         setShowBasicDetails(false);
         setShowStartKYC(true);
         toast.success('Basic info collected');
   
-        // **4. Delay AI message after 2 seconds:**
         setTimeout(() => {
-          generateResponse('Start KYC'); // AI response after 2 seconds
+          generateResponse('Start KYC');
         }, 2000);
       }
-    }, 1000); // Basic details update delayed by 1 second
+    }, 1000);
   };
   
-  
-  
-
   const handleFileChange = (event, stateSetter) => {
     const file = event.target.files[0];
     if (file) {
@@ -203,7 +200,7 @@ function ChatBot() {
       if (matchPercentage > 30) {
         toast.success("Face verification successful");
         setShowCaptureSignature(true);
-        setShowUploadDocument(false); // Hide the upload images button
+        setShowUploadDocument(false);
       } else {
         toast.error("Face verification not successful");
       }
@@ -215,7 +212,7 @@ function ChatBot() {
   };
 
   const handleKYCCompletion = () => {
-    const completionMessage = "Your K-Y-C is completed successfully.You may close this window now, You will shortly receive an email and SMS with more details.";
+    const completionMessage = "Your K-Y-C is completed successfully. You may close this window now. You will shortly receive an email and SMS with more details.";
     const newMessage = {
       id: messages.length + 1,
       sender: 'Shield AI',
@@ -230,9 +227,7 @@ function ChatBot() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoRef.current.srcObject = stream;
-      videoRef.current.play(); // Start video playback
-
-      // Hide the capture signature button and show the capture image option
+      videoRef.current.play();
       setShowCaptureSignature(false);
       setShowCaptureImage(true);
     } catch (error) {
@@ -242,18 +237,13 @@ function ChatBot() {
   };
 
   const handleCaptureImage = () => {
-    // Display a toast indicating processing signature
     toast.info("Processing signature...");
   
-    // Simulate processing time (2.5 seconds)
     setTimeout(() => {
-      // Assuming verification is successful, display a toast for successful verification
       toast.success("Signature verified successfully");
-  
-      // Hide video and capture image options after successful verification
       setShowCaptureImage(false);
       setShowVideo(false);
-      handleKYCCompletion(); // Update showVideo state to hide the video
+      handleKYCCompletion();
     }, 2500);
   };
   
@@ -303,95 +293,42 @@ function ChatBot() {
     <div className="chat-app-container">
       <div id="google_translate_element" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: '9999' }}></div>
       <header className="chat-header">
-      <img src={Logo} alt="Logo" />;
+        <img src={Logo} alt="Logo" />
       </header>
       <div className="chat-container">
         <div className="messages-wrapper">
           <div className="messages">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`message ${message.sender.toLowerCase() === 'user' ? 'user' : 'ai'}`}
-              >
-                {message.sender.toLowerCase() === 'user' ? (
-                  <span className="sender">You</span>
-                ) : (
-                  <span className="sender">AI</span>
-                )}
-                <p className="text">{message.text}</p>
-              </div>
+              <ChatMessage key={message.id} message={message} />
             ))}
             <div ref={messagesEndRef} />
           </div>
         </div>
 
-        <div className="options-container">
-          <h3>Click the options below to continue</h3>
-          {showWhatIs && (
-            <button onClick={() => handleOptionClick('What is Identity Shield?')}>
-              What is Identity Shield?
-            </button>
-          )}
-          {showGetStarted && (
-            <button onClick={() => handleOptionClick('Get started with Identity Shield')}>
-              Get started with Identity Shield
-            </button>
-          )}
-          {showContactSupport && (
-            <button onClick={() => handleOptionClick('Contact support')}>Contact support</button>
-          )}
-          {showStartKYC && (
-            <button onClick={() => handleOptionClick('Start KYC')}>Start KYC</button>
-          )}
-          {showUploadDocument && (
-            <div>
-              <input type="file" id="selfieInput" onChange={handleSelfieUpload} />
-              <input type="file" id="idInput" onChange={handleIdUpload} />
-              <button onClick={handleUploadImages}>Upload Images</button>
-            </div>
-          )}
-          {showCaptureSignature && (
-            <div>
-              <p>Please capture your signature on a white paper</p>
-              <button onClick={handleSignatureCapture}>Capture Signature</button>
-            </div>
-          )}
-          {showCaptureImage && ( // Conditionally render the capture image option
-            <div>
-              <p>Please capture your image</p>
-              <button onClick={handleCaptureImage}>Capture Image</button>
-            </div>
-          )}
-
-          {showBasicDetails && (
-            <button onClick={() => handleOptionClick('Give Basic Details')}>
-              Give Basic Details
-            </button>
-          )}
-          <ToastContainer />
-        </div>
         {showBasicDetails && (
-          <div className="basic-details-form">
-            <form onSubmit={handleBasicDetailsSubmit}>
-              <input
-                type="text"
-                id="input"
-                value={basicDetails[Object.keys(basicDetails)[basicDetailsIndex]] || ''}
-                onChange={(event) => {
-                  const detail = Object.keys(basicDetails)[basicDetailsIndex];
-                  const newValue = event.target.value;
-                  setBasicDetails((prevState) => ({
-                    ...prevState,
-                    [detail]: newValue,
-                  }));
-                }}
-              />
-              <button type="submit">Send</button>
-            </form>
-          </div>
+          <BasicDetailsForm
+            handleBasicDetailsSubmit={handleBasicDetailsSubmit}
+            basicDetailsIndex={basicDetailsIndex}
+            basicDetails={basicDetails}
+            setBasicDetails={setBasicDetails}
+          />
         )}
+
+        {!showBasicDetails && (
+          <Options
+            handleOptionClick={handleOptionClick}
+            options={[
+              'What is Identity Shield?',
+              'Get started with Identity Shield',
+              'Contact support',
+              'Start KYC',
+            ]}
+          />
+        )}
+        
+        <ToastContainer />
       </div>
-      {showVideo && <video ref={videoRef} id="video" />} {/* Update this line */}
+      {showVideo && <video ref={videoRef} id="video" />}
     </div>
   );
 }
